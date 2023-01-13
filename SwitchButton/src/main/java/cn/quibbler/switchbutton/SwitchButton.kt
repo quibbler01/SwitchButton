@@ -193,9 +193,9 @@ class SwitchButton : View {
     /**
      * 当前状态
      */
-    private var viewState: ViewState? = null
-    private var beforeState: ViewState? = null
-    private var afterState: ViewState? = null
+    private var viewState: ViewState = ViewState()
+    private var beforeState: ViewState = ViewState()
+    private var afterState: ViewState = ViewState()
 
     private val rect = RectF()
 
@@ -276,6 +276,46 @@ class SwitchButton : View {
         typedArray?.recycle()
     }
 
+    /**
+     * Is it in animation state
+     * @return
+     */
+    private fun isInAnimating(): Boolean {
+        return animateState != ANIMATE_STATE_NONE
+    }
+
+    /**
+     * Start dragging
+     */
+    private fun pendingDragState() {
+        if (isInAnimating()) return
+        if (!isTouchingDown) return
+
+        valueAnimator?.let {
+            if (it.isRunning) {
+                it.cancel()
+            }
+        }
+
+        animateState = ANIMATE_STATE_PENDING_DRAG
+
+
+        beforeState.copy(viewState)
+        afterState.copy(viewState)
+
+        if (isChecked) {
+            afterState.checkStateColor = checkedColor
+            afterState.buttonX = buttonMaxX
+            afterState.checkedLineColor = checkedColor
+        } else {
+            afterState.checkStateColor = uncheckColor
+            afterState.buttonX = buttonMinX
+            afterState.radius = viewRadius
+        }
+
+        valueAnimator?.start()
+    }
+
     private interface OnCheckedChangeListener {
         fun onCheckedChanged(view: SwitchButton, isChecked: Boolean)
     }
@@ -305,7 +345,7 @@ class SwitchButton : View {
          */
         var radius = 0f
 
-        private fun copy(source: ViewState) {
+        fun copy(source: ViewState) {
             buttonX = source.buttonX
             checkStateColor = source.checkStateColor
             checkedLineColor = source.checkedLineColor
