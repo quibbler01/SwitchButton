@@ -4,6 +4,7 @@ import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Resources
+import android.content.res.TypedArray
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
@@ -44,6 +45,46 @@ class SwitchButton : View {
         private fun Int.dp2px(): Float {
             val r = Resources.getSystem()
             return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, this.toFloat(), r.displayMetrics)
+        }
+
+        private fun optInt(typedArray: TypedArray?, index: Int, def: Int): Int {
+            if (typedArray == null) {
+                return def
+            } else {
+                return typedArray.getInt(index, def)
+            }
+        }
+
+        private fun optPixelSize(typedArray: TypedArray?, index: Int, def: Float): Float {
+            if (typedArray == null) {
+                return def
+            } else {
+                return typedArray.getDimension(index, def)
+            }
+        }
+
+        private fun optPixelSize(typedArray: TypedArray?, index: Int, def: Int): Int {
+            if (typedArray == null) {
+                return def
+            } else {
+                return typedArray.getDimensionPixelSize(index, def)
+            }
+        }
+
+        private fun optColor(typedArray: TypedArray?, index: Int, def: Int): Int {
+            if (typedArray == null) {
+                return def
+            } else {
+                return typedArray.getColor(index, def)
+            }
+        }
+
+        private fun optBoolean(typedArray: TypedArray?, index: Int, def: Boolean): Boolean {
+            if (typedArray == null) {
+                return def
+            } else {
+                return typedArray.getBoolean(index, def)
+            }
         }
 
     }
@@ -271,6 +312,9 @@ class SwitchButton : View {
     private fun init(context: Context?, attrs: AttributeSet?) {
         val typedArray = context?.obtainStyledAttributes(attrs, R.styleable.SwitchButton)
 
+        typedArray?.let {
+
+        }
 
 
         typedArray?.recycle()
