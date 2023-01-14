@@ -5,8 +5,10 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Resources
 import android.content.res.TypedArray
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -223,13 +225,12 @@ class SwitchButton : View {
     /**
      * 按钮画笔
      */
-    private var buttonPaint: Paint? = null
+    private var buttonPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
      * 背景画笔
      */
-    private var paint: Paint? = null
-
+    private var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
      * 当前状态
@@ -249,7 +250,7 @@ class SwitchButton : View {
     /**
      *
      */
-    private var valueAnimator: ValueAnimator? = null
+    private var valueAnimator: ValueAnimator = ValueAnimator.ofFloat(0f, 1f)
 
     private var argbEvaluator = ArgbEvaluator()
 
@@ -312,12 +313,73 @@ class SwitchButton : View {
     private fun init(context: Context?, attrs: AttributeSet?) {
         val typedArray = context?.obtainStyledAttributes(attrs, R.styleable.SwitchButton)
 
-        typedArray?.let {
+        shadowEffect = optBoolean(typedArray, R.styleable.SwitchButton_sb_enable_effect, true)
 
+        uncheckCircleColor = optColor(typedArray, R.styleable.SwitchButton_sb_uncheckcircle_color, -0x555556) //0XffAAAAAA;
+
+        uncheckCircleWidth = optPixelSize(typedArray, R.styleable.SwitchButton_sb_uncheckcircle_width, 1.5f.dp2px().toInt()) //dp2pxInt(1.5f);
+
+        uncheckCircleOffsetX = 10f.dp2px()
+
+        uncheckCircleRadius = optPixelSize(typedArray, R.styleable.SwitchButton_sb_uncheckcircle_radius, 4f.dp2px()) //dp2px(4);
+
+        checkedLineOffsetX = 4f.dp2px()
+        checkedLineOffsetY = 4f.dp2px()
+
+        shadowRadius = optPixelSize(typedArray, R.styleable.SwitchButton_sb_shadow_radius, 2.5f.dp2px().toInt()) //dp2pxInt(2.5f);
+
+        shadowOffset = optPixelSize(typedArray, R.styleable.SwitchButton_sb_shadow_offset, 1.5f.dp2px().toInt()) //dp2pxInt(1.5f);
+
+        shadowColor = optColor(typedArray, R.styleable.SwitchButton_sb_shadow_color, 0X33000000) //0X33000000;
+
+        uncheckColor = optColor(typedArray, R.styleable.SwitchButton_sb_uncheck_color, -0x222223) //0XffDDDDDD;
+
+        checkedColor = optColor(typedArray, R.styleable.SwitchButton_sb_checked_color, -0xae2c99) //0Xff51d367;
+
+        borderWidth = optPixelSize(typedArray, R.styleable.SwitchButton_sb_border_width, 1f.dp2px().toInt()) //dp2pxInt(1);
+
+        checkLineColor = optColor(typedArray, R.styleable.SwitchButton_sb_checkline_color, Color.WHITE) //Color.WHITE;
+
+        checkLineWidth = optPixelSize(typedArray, R.styleable.SwitchButton_sb_checkline_width, 1f.dp2px().toInt()) //dp2pxInt(1.0f);
+
+        checkLineLength = 6f.dp2px()
+
+        val buttonColor = optColor(typedArray, R.styleable.SwitchButton_sb_button_color, Color.WHITE) //Color.WHITE;
+
+        uncheckButtonColor = optColor(typedArray, R.styleable.SwitchButton_sb_uncheckbutton_color, buttonColor)
+
+        checkedButtonColor = optColor(typedArray, R.styleable.SwitchButton_sb_checkedbutton_color, buttonColor)
+
+        val effectDuration = optInt(typedArray, R.styleable.SwitchButton_sb_effect_duration, 300) //300;
+
+        isChecked = optBoolean(typedArray, R.styleable.SwitchButton_sb_checked, false)
+
+        showIndicator = optBoolean(typedArray, R.styleable.SwitchButton_sb_show_indicator, true)
+
+        background = optColor(typedArray, R.styleable.SwitchButton_sb_background, Color.WHITE) //Color.WHITE;
+
+        enableEffect = optBoolean(typedArray, R.styleable.SwitchButton_sb_enable_effect, true)
+
+        typedArray?.recycle()
+
+        buttonPaint.color = buttonColor
+
+        if (shadowEffect) {
+            buttonPaint.setShadowLayer(shadowRadius.toFloat(), 0f, shadowOffset.toFloat(), shadowColor)
         }
 
 
-        typedArray?.recycle()
+        valueAnimator.duration = effectDuration.toLong()
+        valueAnimator.repeatCount = 0
+
+        valueAnimator.addUpdateListener(animatorUpdateListener)
+        valueAnimator.addListener(animatorListener)
+
+        super.setClickable(true)
+        this.setPadding(0, 0, 0, 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            setLayerType(LAYER_TYPE_SOFTWARE, null)
+        }
     }
 
     /**
