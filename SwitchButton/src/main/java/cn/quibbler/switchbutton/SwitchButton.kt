@@ -1,5 +1,6 @@
 package cn.quibbler.switchbutton
 
+import android.animation.Animator
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -12,11 +13,12 @@ import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
+import android.widget.Checkable
 
 /**
  * SwitchButton.
  */
-class SwitchButton : View {
+class SwitchButton : View, Checkable {
 
     companion object {
 
@@ -303,6 +305,76 @@ class SwitchButton : View {
         }
     }
 
+    private val animatorUpdateListener: ValueAnimator.AnimatorUpdateListener = object : ValueAnimator.AnimatorUpdateListener {
+
+        override fun onAnimationUpdate(animation: ValueAnimator) {
+            val value = animation.animatedValue as Float
+            when (animateState) {
+                ANIMATE_STATE_PENDING_SETTLE -> {}
+                ANIMATE_STATE_PENDING_RESET -> {}
+                ANIMATE_STATE_PENDING_DRAG -> {
+                    viewState.checkedLineColor = argbEvaluator.evaluate(value, beforeState.checkedLineColor, afterState.checkedLineColor) as Int
+                    viewState.radius = beforeState.radius + (afterState.radius - beforeState.radius) * value
+                    if (animateState != ANIMATE_STATE_PENDING_DRAG) {
+                        viewState.buttonX = beforeState.buttonX + (afterState.buttonX - beforeState.buttonX) * value
+                        viewState.checkStateColor = argbEvaluator.evaluate(value, beforeState.checkStateColor, afterState.checkStateColor) as Int
+                    }
+                }
+                ANIMATE_STATE_SWITCH -> {
+                    viewState.buttonX = beforeState.buttonX + (afterState.buttonX - beforeState.buttonX) * value
+                    val fraction = (viewState.buttonX - buttonMinX) / (buttonMaxX - buttonMinX)
+                    viewState.checkStateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkedColor) as Int
+                    viewState.radius = fraction * viewRadius
+                    viewState.checkedLineColor = argbEvaluator.evaluate(fraction, Color.TRANSPARENT, checkLineColor) as Int
+                }
+                ANIMATE_STATE_DRAGING -> {}
+                ANIMATE_STATE_NONE -> {}
+            }
+            postInvalidate()
+        }
+
+    }
+
+    private val animatorListener: Animator.AnimatorListener = object : Animator.AnimatorListener {
+        override fun onAnimationStart(animation: Animator?) {
+        }
+
+        override fun onAnimationEnd(animation: Animator?) {
+            when (animateState) {
+                ANIMATE_STATE_DRAGING -> {}
+                ANIMATE_STATE_PENDING_DRAG -> {
+                    animateState = ANIMATE_STATE_DRAGING
+                    viewState.checkedLineColor = Color.TRANSPARENT
+                    viewState.radius = viewRadius
+
+                    postInvalidate()
+                }
+                ANIMATE_STATE_PENDING_RESET -> {
+                    animateState = ANIMATE_STATE_NONE
+                    postInvalidate()
+                }
+                ANIMATE_STATE_PENDING_SETTLE -> {
+                    animateState = ANIMATE_STATE_NONE
+                    postInvalidate()
+                    broadcastEvent()
+                }
+                ANIMATE_STATE_SWITCH -> {
+                    isChecked = !isChecked
+                    animateState = ANIMATE_STATE_NONE
+                    postInvalidate()
+                    broadcastEvent()
+                }
+                ANIMATE_STATE_NONE -> {}
+            }
+        }
+
+        override fun onAnimationCancel(animation: Animator?) {
+        }
+
+        override fun onAnimationRepeat(animation: Animator?) {
+        }
+    }
+
     constructor(context: Context?) : this(context, null)
     constructor(context: Context?, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : this(context, attrs, defStyleAttr, 0)
@@ -382,6 +454,14 @@ class SwitchButton : View {
         }
     }
 
+    private fun broadcastEvent() {
+        if (onCheckedChangeListener != null) {
+            isEventBroadcast = true
+            onCheckedChangeListener?.onCheckedChanged(this, isChecked)
+        }
+        isEventBroadcast = false
+    }
+
     /**
      * Is it in animation state
      * @return
@@ -419,7 +499,91 @@ class SwitchButton : View {
             afterState.radius = viewRadius
         }
 
-        valueAnimator?.start()
+        valueAnimator.start()
+    }
+
+    override fun setChecked(checked: Boolean) {
+        if (checked == isChecked()) {
+            postInvalidate()
+            return
+        }
+        toggle(enableEffect, false)
+    }
+
+    override fun isChecked(): Boolean = isChecked
+
+    override fun toggle() {
+        toggle(true)
+    }
+
+
+    /**
+     * 切换状态
+     * @param animate
+     */
+    fun toggle(animate: Boolean) {
+        toggle(animate, true)
+    }
+
+    private fun toggle(animate: Boolean, broadcast: Boolean) {
+        if (!isEnabled) return
+
+        if (isEventBroadcast) {
+            throw RuntimeException("should NOT switch the state in method: [onCheckedChanged]!")
+        }
+
+        if (!isUiInited) {
+            isChecked = !isChecked
+            if (broadcast) {
+                broadcastEvent()
+            }
+            return
+        }
+
+        if (valueAnimator.isRunning) {
+            valueAnimator.cancel()
+        }
+
+        if (!enableEffect || !animate) {
+            isChecked = !isChecked
+            if (isChecked()) {
+                setCheckedViewState(viewState)
+            } else {
+                setUncheckViewState(viewState)
+            }
+            postInvalidate()
+            if (broadcast) {
+                broadcastEvent()
+            }
+            return
+        }
+
+        animateState = ANIMATE_STATE_SWITCH
+        beforeState.copy(viewState)
+
+        if (isChecked()) {
+            //切换到unchecked
+            setUncheckViewState(afterState)
+        } else {
+            setCheckedViewState(afterState)
+        }
+        valueAnimator.start()
+    }
+
+    private fun setCheckedViewState(viewState: ViewState) {
+        viewState.radius = viewRadius
+        viewState.checkStateColor = checkedColor
+        viewState.checkedLineColor = checkLineColor
+        viewState.buttonX = buttonMaxX
+        buttonPaint.color = checkedButtonColor
+    }
+
+    private fun setUncheckViewState(viewState: ViewState) {
+        viewState.radius = 0f
+        viewState.checkStateColor = uncheckColor
+        viewState.checkedLineColor = Color.TRANSPARENT
+        viewState.buttonX = buttonMinX
+        buttonPaint.color = uncheckButtonColor
     }
 
     private interface OnCheckedChangeListener {
