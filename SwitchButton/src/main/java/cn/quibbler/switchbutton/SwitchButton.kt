@@ -14,6 +14,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.widget.Checkable
+import kotlin.math.max
 
 /**
  * SwitchButton.
@@ -22,8 +23,8 @@ class SwitchButton : View, Checkable {
 
     companion object {
 
-        private val DEFAULT_WIDTH = 58.dp2px()
-        private val DEFAULT_HEIGHT = 36.dp2px()
+        private val DEFAULT_WIDTH: Int = 58.dp2px().toInt()
+        private val DEFAULT_HEIGHT: Int = 36.dp2px().toInt()
 
         /**
          * Animation state:
@@ -588,6 +589,58 @@ class SwitchButton : View, Checkable {
 
     private interface OnCheckedChangeListener {
         fun onCheckedChanged(view: SwitchButton, isChecked: Boolean)
+    }
+
+    override fun setPadding(left: Int, top: Int, right: Int, bottom: Int) {
+        super.setPadding(0, 0, 0, 0)
+    }
+
+    override fun onMeasure(widthMeasureSpec_: Int, heightMeasureSpec_: Int) {
+        var widthMeasureSpec = widthMeasureSpec_
+        var heightMeasureSpec = heightMeasureSpec_
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+
+        if (widthMode == MeasureSpec.UNSPECIFIED || widthMode == MeasureSpec.AT_MOST) {
+            widthMeasureSpec = MeasureSpec.makeMeasureSpec(DEFAULT_WIDTH, MeasureSpec.EXACTLY)
+        }
+        if (heightMode == MeasureSpec.UNSPECIFIED
+                || heightMode == MeasureSpec.AT_MOST) {
+            heightMeasureSpec = MeasureSpec.makeMeasureSpec(DEFAULT_HEIGHT, MeasureSpec.EXACTLY)
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+
+        val viewPadding = max(shadowRadius + shadowOffset, borderWidth).toFloat()
+        height = h - viewPadding - viewPadding
+        width = w - viewPadding - viewPadding
+
+        viewRadius = height * 0.5f
+        buttonRadius = viewRadius - borderWidth
+
+        left = viewPadding
+        top = viewPadding
+        right = w - viewPadding
+        bottom = h - viewPadding
+
+        centerX = (left + right) * .5f
+        centerY = (top + bottom) * .5f
+
+        buttonMinX = left + viewRadius
+        buttonMaxX = right - viewRadius
+
+        if (isChecked()) {
+            setCheckedViewState(viewState)
+        } else {
+            setUncheckViewState(viewState)
+        }
+
+        isUiInited = true
+
+        postInvalidate()
     }
 
     /**
