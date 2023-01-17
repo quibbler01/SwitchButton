@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Resources
 import android.content.res.TypedArray
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
@@ -641,6 +642,163 @@ class SwitchButton : View, Checkable {
         isUiInited = true
 
         postInvalidate()
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+
+        paint.strokeWidth = borderWidth.toFloat()
+        paint.style = Paint.Style.FILL
+        //绘制白色背景
+        paint.color = background
+
+        //绘制白色背景
+        paint.color = background
+        drawRoundRect(canvas, left, top, right, bottom, viewRadius, paint)
+
+        //绘制关闭状态的边框
+        paint.style = Paint.Style.STROKE
+        paint.color = uncheckColor
+        drawRoundRect(canvas, left, top, right, bottom, viewRadius, paint)
+
+        //绘制小圆圈
+        if (showIndicator) {
+            drawUncheckIndicator(canvas)
+        }
+
+        //绘制开启背景色
+        val des = viewState.radius * .5f //[0-backgroundRadius*0.5f]
+        paint.style = Paint.Style.STROKE
+        paint.color = viewState.checkStateColor
+        paint.strokeWidth = borderWidth + des * 2f
+        drawRoundRect(canvas, left + des, top + des, right - des, bottom - des, viewRadius, paint)
+
+        //绘制按钮左边绿色长条遮挡
+        paint.style = Paint.Style.FILL
+        paint.strokeWidth = 1f
+        drawArc(canvas, left, top, left + 2 * viewRadius, top + 2 * viewRadius, 90f, 180f, paint)
+        canvas!!.drawRect(left + viewRadius, top, viewState.buttonX, top + 2 * viewRadius, paint)
+
+        //绘制小线条
+        if (showIndicator) {
+            drawCheckedIndicator(canvas)
+        }
+
+        //绘制按钮
+        drawButton(canvas, viewState.buttonX, centerY)
+    }
+
+    /**
+     * 绘制选中状态指示器
+     * @param canvas
+     */
+    protected fun drawCheckedIndicator(canvas: Canvas?) {
+        drawCheckedIndicator(canvas,
+                viewState.checkedLineColor,
+                checkLineWidth.toFloat(),
+                left + viewRadius - checkedLineOffsetX, centerY - checkLineLength,
+                left + viewRadius - checkedLineOffsetY, centerY + checkLineLength,
+                paint);
+    }
+
+    /**
+     * 绘制选中状态指示器
+     * @param canvas
+     * @param color
+     * @param lineWidth
+     * @param sx
+     * @param sy
+     * @param ex
+     * @param ey
+     * @param paint
+     */
+    protected fun drawCheckedIndicator(canvas: Canvas?,
+                                       color: Int,
+                                       lineWidth: Float,
+                                       sx: Float, sy: Float, ex: Float, ey: Float,
+                                       paint: Paint) {
+        paint.style = Paint.Style.STROKE
+        paint.color = color
+        paint.strokeWidth = lineWidth
+        canvas?.drawLine(sx, sy, ex, ey, paint)
+    }
+
+    /**
+     * 绘制关闭状态指示器
+     * @param canvas
+     */
+    private fun drawUncheckIndicator(canvas: Canvas?) {
+        drawUncheckIndicator(canvas,
+                uncheckCircleColor,
+                uncheckCircleWidth.toFloat(),
+                right - uncheckCircleOffsetX, centerY,
+                uncheckCircleRadius,
+                paint)
+    }
+
+
+    /**
+     * 绘制关闭状态指示器
+     * @param canvas
+     * @param color
+     * @param lineWidth
+     * @param centerX
+     * @param centerY
+     * @param radius
+     * @param paint
+     */
+    protected fun drawUncheckIndicator(canvas: Canvas?,
+                                       color: Int,
+                                       lineWidth: Float,
+                                       centerX: Float, centerY: Float,
+                                       radius: Float,
+                                       paint: Paint) {
+        paint.style = Paint.Style.STROKE
+        paint.color = color
+        paint.strokeWidth = lineWidth
+        canvas?.drawCircle(centerX, centerY, radius, paint)
+    }
+
+
+    private fun drawArc(canvas: Canvas?, left: Float, top: Float, right: Float, bottom: Float, startAngle: Float, sweepAngle: Float, paint: Paint) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            canvas?.drawArc(left, top, right, bottom, startAngle, sweepAngle, true, paint)
+        } else {
+            rect[left, top, right] = bottom
+            canvas?.drawArc(rect, startAngle, sweepAngle, true, paint)
+        }
+    }
+
+    /**
+     * @param canvas
+     * @param left
+     * @param top
+     * @param right
+     * @param bottom
+     * @param backgroundRadius
+     * @param paint
+     */
+    private fun drawRoundRect(canvas: Canvas?, left: Float, top: Float, right: Float, bottom: Float, backgroundRadius: Float, paint: Paint) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            canvas?.drawRoundRect(left, top, right, bottom, backgroundRadius, backgroundRadius, paint)
+        } else {
+            rect[left, top, right] = bottom
+            canvas?.drawRoundRect(rect, backgroundRadius, backgroundRadius, paint)
+        }
+    }
+
+    /**
+     * @param canvas
+     * @param x px
+     * @param y px
+     */
+    private fun drawButton(canvas: Canvas?, x: Float, y: Float) {
+        canvas?.drawCircle(x, y, buttonRadius, buttonPaint)
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1f
+        paint.color = -0x222223
+        canvas?.drawCircle(x, y, buttonRadius, paint)
     }
 
     /**
