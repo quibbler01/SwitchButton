@@ -13,9 +13,11 @@ import android.graphics.RectF
 import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Checkable
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * SwitchButton.
@@ -799,6 +801,115 @@ class SwitchButton : View, Checkable {
         paint.strokeWidth = 1f
         paint.color = -0x222223
         canvas?.drawCircle(x, y, buttonRadius, paint)
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (!isEnabled) return false
+        when (event?.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                isTouchingDown = true
+                touchDownTime = System.currentTimeMillis()
+                removeCallbacks(postPendingDrag)
+                postDelayed(postPendingDrag, 100)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val eventX = event.x
+                if (isPendingDragState()) {
+                    //在准备进入拖动状态过程中，可以拖动按钮位置
+                    var fraction: Float = eventX / getWidth()
+                    fraction = max(0f, min(1f, fraction))
+                    viewState.buttonX = buttonMinX + (buttonMaxX - buttonMinX) * fraction
+                } else if (isDragState()) {
+                    //拖动按钮位置，同时改变对应的背景颜色
+                    var fraction = eventX / getWidth()
+                    fraction = max(0f, min(1f, fraction))
+                    viewState.buttonX = (buttonMinX + (buttonMaxX - buttonMinX) * fraction)
+                    viewState.checkStateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkedColor) as Int
+                    postInvalidate()
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                isTouchingDown = false
+                removeCallbacks(postPendingDrag)
+                if (System.currentTimeMillis() - touchDownTime <= 300) {
+                    //点击时间小于300ms，认为是点击操作
+                    toggle()
+                } else if (isDragState()) {
+                    //在拖动状态，计算按钮位置，设置是否切换状态
+                    val eventX = event.x
+                    var fraction: Float = eventX / getWidth()
+                    fraction = max(0f, min(1f, fraction))
+                    val newCheck = fraction > .5f
+                    if (newCheck == isChecked()) {
+                        pendingCancelDragState()
+                    } else {
+                        isChecked = newCheck
+                        pendingSettleState()
+                    }
+                } else if (isPendingDragState()) {
+                    //在准备进入拖动状态过程中，取消之，复位
+                    pendingCancelDragState()
+                }
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                isTouchingDown = true
+
+                removeCallbacks(postPendingDrag)
+                if (isPendingDragState() || isDragState()) {
+                    //复位
+                    pendingCancelDragState()
+                }
+            }
+        }
+        return true
+    }
+
+    /**
+     * 是否在进入拖动或离开拖动状态
+     * @return
+     */
+    private fun isPendingDragState(): Boolean = (animateState == ANIMATE_STATE_PENDING_DRAG || animateState == ANIMATE_STATE_PENDING_RESET)
+
+    /**
+     * 是否在手指拖动状态
+     * @return
+     */
+    private fun isDragState(): Boolean = animateState == ANIMATE_STATE_DRAGING
+
+    /**
+     * 取消拖动状态
+     */
+    private fun pendingCancelDragState() {
+        if (isDragState() || isPendingDragState()) {
+            if (valueAnimator.isRunning) {
+                valueAnimator.cancel()
+            }
+            animateState = ANIMATE_STATE_PENDING_RESET
+            beforeState.copy(viewState)
+            if (isChecked()) {
+                setCheckedViewState(afterState)
+            } else {
+                setUncheckViewState(afterState)
+            }
+            valueAnimator.start()
+        }
+    }
+
+    /**
+     * 动画-设置新的状态
+     */
+    private fun pendingSettleState() {
+        if (valueAnimator.isRunning) {
+            valueAnimator.cancel()
+        }
+        animateState = ANIMATE_STATE_PENDING_SETTLE
+        beforeState.copy(viewState)
+        if (isChecked()) {
+            setCheckedViewState(afterState)
+        } else {
+            setUncheckViewState(afterState)
+        }
+        valueAnimator.start()
     }
 
     /**
