@@ -7,6 +7,10 @@ android {
     namespace 'cn.quibbler.switchbutton'
     compileSdk 32
 
+    buildFeatures {
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "cn.quibbler.switchbutton"
         minSdk 24
@@ -33,6 +37,7 @@ android {
 }
 
 dependencies {
+    implementation project(':SwitchButton')
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
