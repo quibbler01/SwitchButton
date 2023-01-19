@@ -309,34 +309,30 @@ class SwitchButton : View, Checkable {
         }
     }
 
-    private val animatorUpdateListener: ValueAnimator.AnimatorUpdateListener = object : ValueAnimator.AnimatorUpdateListener {
-
-        override fun onAnimationUpdate(animation: ValueAnimator) {
-            val value = animation.animatedValue as Float
-            when (animateState) {
-                ANIMATE_STATE_PENDING_SETTLE -> {}
-                ANIMATE_STATE_PENDING_RESET -> {}
-                ANIMATE_STATE_PENDING_DRAG -> {
-                    viewState.checkedLineColor = argbEvaluator.evaluate(value, beforeState.checkedLineColor, afterState.checkedLineColor) as Int
-                    viewState.radius = beforeState.radius + (afterState.radius - beforeState.radius) * value
-                    if (animateState != ANIMATE_STATE_PENDING_DRAG) {
-                        viewState.buttonX = beforeState.buttonX + (afterState.buttonX - beforeState.buttonX) * value
-                        viewState.checkStateColor = argbEvaluator.evaluate(value, beforeState.checkStateColor, afterState.checkStateColor) as Int
-                    }
-                }
-                ANIMATE_STATE_SWITCH -> {
+    private val animatorUpdateListener: ValueAnimator.AnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener { animation ->
+        val value = animation.animatedValue as Float
+        when (animateState) {
+            ANIMATE_STATE_PENDING_SETTLE -> {}
+            ANIMATE_STATE_PENDING_RESET -> {}
+            ANIMATE_STATE_PENDING_DRAG -> {
+                viewState.checkedLineColor = argbEvaluator.evaluate(value, beforeState.checkedLineColor, afterState.checkedLineColor) as Int
+                viewState.radius = beforeState.radius + (afterState.radius - beforeState.radius) * value
+                if (animateState != ANIMATE_STATE_PENDING_DRAG) {
                     viewState.buttonX = beforeState.buttonX + (afterState.buttonX - beforeState.buttonX) * value
-                    val fraction = (viewState.buttonX - buttonMinX) / (buttonMaxX - buttonMinX)
-                    viewState.checkStateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkedColor) as Int
-                    viewState.radius = fraction * viewRadius
-                    viewState.checkedLineColor = argbEvaluator.evaluate(fraction, Color.TRANSPARENT, checkLineColor) as Int
+                    viewState.checkStateColor = argbEvaluator.evaluate(value, beforeState.checkStateColor, afterState.checkStateColor) as Int
                 }
-                ANIMATE_STATE_DRAGING -> {}
-                ANIMATE_STATE_NONE -> {}
             }
-            postInvalidate()
+            ANIMATE_STATE_SWITCH -> {
+                viewState.buttonX = beforeState.buttonX + (afterState.buttonX - beforeState.buttonX) * value
+                val fraction = (viewState.buttonX - buttonMinX) / (buttonMaxX - buttonMinX)
+                viewState.checkStateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkedColor) as Int
+                viewState.radius = fraction * viewRadius
+                viewState.checkedLineColor = argbEvaluator.evaluate(fraction, Color.TRANSPARENT, checkLineColor) as Int
+            }
+            ANIMATE_STATE_DRAGING -> {}
+            ANIMATE_STATE_NONE -> {}
         }
-
+        postInvalidate()
     }
 
     private val animatorListener: Animator.AnimatorListener = object : Animator.AnimatorListener {
@@ -608,7 +604,8 @@ class SwitchButton : View, Checkable {
             widthMeasureSpec = MeasureSpec.makeMeasureSpec(DEFAULT_WIDTH, MeasureSpec.EXACTLY)
         }
         if (heightMode == MeasureSpec.UNSPECIFIED
-                || heightMode == MeasureSpec.AT_MOST) {
+            || heightMode == MeasureSpec.AT_MOST
+        ) {
             heightMeasureSpec = MeasureSpec.makeMeasureSpec(DEFAULT_HEIGHT, MeasureSpec.EXACTLY)
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -695,12 +692,14 @@ class SwitchButton : View, Checkable {
      * @param canvas
      */
     protected fun drawCheckedIndicator(canvas: Canvas?) {
-        drawCheckedIndicator(canvas,
-                viewState.checkedLineColor,
-                checkLineWidth.toFloat(),
-                left + viewRadius - checkedLineOffsetX, centerY - checkLineLength,
-                left + viewRadius - checkedLineOffsetY, centerY + checkLineLength,
-                paint);
+        drawCheckedIndicator(
+            canvas,
+            viewState.checkedLineColor,
+            checkLineWidth.toFloat(),
+            left + viewRadius - checkedLineOffsetX, centerY - checkLineLength,
+            left + viewRadius - checkedLineOffsetY, centerY + checkLineLength,
+            paint
+        );
     }
 
     /**
@@ -714,11 +713,13 @@ class SwitchButton : View, Checkable {
      * @param ey
      * @param paint
      */
-    protected fun drawCheckedIndicator(canvas: Canvas?,
-                                       color: Int,
-                                       lineWidth: Float,
-                                       sx: Float, sy: Float, ex: Float, ey: Float,
-                                       paint: Paint) {
+    protected fun drawCheckedIndicator(
+        canvas: Canvas?,
+        color: Int,
+        lineWidth: Float,
+        sx: Float, sy: Float, ex: Float, ey: Float,
+        paint: Paint
+    ) {
         paint.style = Paint.Style.STROKE
         paint.color = color
         paint.strokeWidth = lineWidth
@@ -730,12 +731,14 @@ class SwitchButton : View, Checkable {
      * @param canvas
      */
     private fun drawUncheckIndicator(canvas: Canvas?) {
-        drawUncheckIndicator(canvas,
-                uncheckCircleColor,
-                uncheckCircleWidth.toFloat(),
-                right - uncheckCircleOffsetX, centerY,
-                uncheckCircleRadius,
-                paint)
+        drawUncheckIndicator(
+            canvas,
+            uncheckCircleColor,
+            uncheckCircleWidth.toFloat(),
+            right - uncheckCircleOffsetX, centerY,
+            uncheckCircleRadius,
+            paint
+        )
     }
 
 
@@ -749,12 +752,14 @@ class SwitchButton : View, Checkable {
      * @param radius
      * @param paint
      */
-    protected fun drawUncheckIndicator(canvas: Canvas?,
-                                       color: Int,
-                                       lineWidth: Float,
-                                       centerX: Float, centerY: Float,
-                                       radius: Float,
-                                       paint: Paint) {
+    protected fun drawUncheckIndicator(
+        canvas: Canvas?,
+        color: Int,
+        lineWidth: Float,
+        centerX: Float, centerY: Float,
+        radius: Float,
+        paint: Paint
+    ) {
         paint.style = Paint.Style.STROKE
         paint.color = color
         paint.strokeWidth = lineWidth
