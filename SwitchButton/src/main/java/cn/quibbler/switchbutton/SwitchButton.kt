@@ -98,42 +98,42 @@ class SwitchButton : View, Checkable {
     }
 
     /**
-     * 阴影半径
+     * Shadow radius
      */
     private var shadowRadius = 0
 
     /**
-     * 阴影Y偏移px
+     * Shadow Y offset px
      */
     private var shadowOffset = 0
 
     /**
-     * 阴影颜色
+     * Shadow Color
      */
     private var shadowColor = 0
 
     /**
-     * 背景半径
+     * Background radius
      */
     private var viewRadius = 0f
 
     /**
-     * 按钮半径
+     * Button radius
      */
     private var buttonRadius = 0f
 
     /**
-     * 背景高
+     * Background high
      */
     private var height = 0f
 
     /**
-     * 背景宽
+     * Background width
      */
     private var width = 0f
 
     /**
-     * 背景位置
+     * Background position
      */
     private var left = 0f
     private var top = 0f
@@ -143,67 +143,67 @@ class SwitchButton : View, Checkable {
     private var centerY = 0f
 
     /**
-     * 背景底色
+     * Background background color
      */
     private var background = 0
 
     /**
-     * 背景关闭颜色
+     * Background off color
      */
     private var uncheckColor = 0
 
     /**
-     * 背景打开颜色
+     * Background Open Color
      */
     private var checkedColor = 0
 
     /**
-     * 边框宽度px
+     * Border width px
      */
     private var borderWidth = 0
 
     /**
-     * 打开指示线颜色
+     * Turn on indicator line color
      */
     private var checkLineColor = 0
 
     /**
-     * 打开指示线宽
+     * Turn on indicator line weight
      */
     private var checkLineWidth = 0
 
     /**
-     * 打开指示线长
+     * Open indicator line length
      */
     private var checkLineLength = 0f
 
     /**
-     * 关闭圆圈颜色
+     * Turn off circle color
      */
     private var uncheckCircleColor = 0
 
     /**
-     * 关闭圆圈线宽
+     * Turn off circle lineweight
      */
     private var uncheckCircleWidth = 0
 
     /**
-     * 关闭圆圈位移X
+     * Close circle displacement X
      */
     private var uncheckCircleOffsetX = 0f
 
     /**
-     * 关闭圆圈半径
+     * Turn off circle radius
      */
     private var uncheckCircleRadius = 0f
 
     /**
-     * 打开指示线位移X
+     * Open indicator line displacement X
      */
     private var checkedLineOffsetX = 0f
 
     /**
-     * 打开指示线位移Y
+     * Open indicator line displacement Y
      */
     private var checkedLineOffsetY = 0f
 
@@ -219,27 +219,27 @@ class SwitchButton : View, Checkable {
 
 
     /**
-     * 按钮最左边
+     * The leftmost button
      */
     private var buttonMinX = 0f
 
     /**
-     * 按钮最右边
+     * Rightmost button
      */
     private var buttonMaxX = 0f
 
     /**
-     * 按钮画笔
+     * Button brush
      */
     private var buttonPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
-     * 背景画笔
+     * Background brush
      */
     private var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
-     * 当前状态
+     * Current state
      */
     private var viewState: ViewState = ViewState()
     private var beforeState: ViewState = ViewState()
@@ -248,7 +248,7 @@ class SwitchButton : View, Checkable {
     private val rect = RectF()
 
     /**
-     * 动画状态
+     * Animation state
      */
     private var animateState = ANIMATE_STATE_NONE
 
@@ -262,27 +262,27 @@ class SwitchButton : View, Checkable {
 
 
     /**
-     * 是否选中
+     * Check
      */
     private var isChecked = false
 
     /**
-     * 是否启用动画
+     * Whether to enable animation
      */
     private var enableEffect = false
 
     /**
-     * 是否启用阴影效果
+     * Whether to enable shadow effect
      */
     private var shadowEffect = false
 
     /**
-     * 是否显示指示器
+     * Whether the indicator is displayed
      */
     private var showIndicator = false
 
     /**
-     * 收拾是否按下
+     * Check whether it is pressed
      */
     private var isTouchingDown = false
 
@@ -299,7 +299,7 @@ class SwitchButton : View, Checkable {
     private var onCheckedChangeListener: OnCheckedChangeListener? = null
 
     /**
-     * 手势按下的时刻
+     * The moment when the gesture is pressed
      */
     private var touchDownTime: Long = 0L
 
@@ -518,7 +518,7 @@ class SwitchButton : View, Checkable {
 
 
     /**
-     * 切换状态
+     * Switch state
      * @param animate
      */
     fun toggle(animate: Boolean) {
@@ -562,7 +562,7 @@ class SwitchButton : View, Checkable {
         beforeState.copy(viewState)
 
         if (isChecked()) {
-            //切换到unchecked
+            //Switch to unchecked
             setUncheckViewState(afterState)
         } else {
             setCheckedViewState(afterState)
@@ -648,47 +648,45 @@ class SwitchButton : View, Checkable {
 
         paint.strokeWidth = borderWidth.toFloat()
         paint.style = Paint.Style.FILL
-        //绘制白色背景
+        //Draw a white background
         paint.color = background
 
-        //绘制白色背景
-        paint.color = background
         drawRoundRect(canvas, left, top, right, bottom, viewRadius, paint)
 
-        //绘制关闭状态的边框
+        //Draw a closed border
         paint.style = Paint.Style.STROKE
         paint.color = uncheckColor
         drawRoundRect(canvas, left, top, right, bottom, viewRadius, paint)
 
-        //绘制小圆圈
+        //Draw a small circle
         if (showIndicator) {
             drawUncheckIndicator(canvas)
         }
 
-        //绘制开启背景色
+        //Draw to turn on the background color
         val des = viewState.radius * .5f //[0-backgroundRadius*0.5f]
         paint.style = Paint.Style.STROKE
         paint.color = viewState.checkStateColor
         paint.strokeWidth = borderWidth + des * 2f
         drawRoundRect(canvas, left + des, top + des, right - des, bottom - des, viewRadius, paint)
 
-        //绘制按钮左边绿色长条遮挡
+        //Draw button left green strip occlusion
         paint.style = Paint.Style.FILL
         paint.strokeWidth = 1f
         drawArc(canvas, left, top, left + 2 * viewRadius, top + 2 * viewRadius, 90f, 180f, paint)
         canvas!!.drawRect(left + viewRadius, top, viewState.buttonX, top + 2 * viewRadius, paint)
 
-        //绘制小线条
+        //Draw small lines
         if (showIndicator) {
             drawCheckedIndicator(canvas)
         }
 
-        //绘制按钮
+        //Draw button
         drawButton(canvas, viewState.buttonX, centerY)
     }
 
     /**
-     * 绘制选中状态指示器
+     * Draw selected status indicator
      * @param canvas
      */
     protected fun drawCheckedIndicator(canvas: Canvas?) {
@@ -703,7 +701,7 @@ class SwitchButton : View, Checkable {
     }
 
     /**
-     * 绘制选中状态指示器
+     * Draw selected status indicator
      * @param canvas
      * @param color
      * @param lineWidth
@@ -727,7 +725,7 @@ class SwitchButton : View, Checkable {
     }
 
     /**
-     * 绘制关闭状态指示器
+     * Draw off status indicator
      * @param canvas
      */
     private fun drawUncheckIndicator(canvas: Canvas?) {
@@ -743,7 +741,7 @@ class SwitchButton : View, Checkable {
 
 
     /**
-     * 绘制关闭状态指示器
+     * Draw off status indicator
      * @param canvas
      * @param color
      * @param lineWidth
@@ -820,12 +818,12 @@ class SwitchButton : View, Checkable {
             MotionEvent.ACTION_MOVE -> {
                 val eventX = event.x
                 if (isPendingDragState()) {
-                    //在准备进入拖动状态过程中，可以拖动按钮位置
+                    //When you are ready to enter the dragging state, you can drag the button position
                     var fraction: Float = eventX / getWidth()
                     fraction = max(0f, min(1f, fraction))
                     viewState.buttonX = buttonMinX + (buttonMaxX - buttonMinX) * fraction
                 } else if (isDragState()) {
-                    //拖动按钮位置，同时改变对应的背景颜色
+                    //Drag the button position and change the corresponding background color
                     var fraction = eventX / getWidth()
                     fraction = max(0f, min(1f, fraction))
                     viewState.buttonX = (buttonMinX + (buttonMaxX - buttonMinX) * fraction)
@@ -837,10 +835,10 @@ class SwitchButton : View, Checkable {
                 isTouchingDown = false
                 removeCallbacks(postPendingDrag)
                 if (System.currentTimeMillis() - touchDownTime <= 300) {
-                    //点击时间小于300ms，认为是点击操作
+                    //If the click time is less than 300 ms, it is considered as a click operation
                     toggle()
                 } else if (isDragState()) {
-                    //在拖动状态，计算按钮位置，设置是否切换状态
+                    //In the dragging state, calculate the button position and set whether to switch the state
                     val eventX = event.x
                     var fraction: Float = eventX / getWidth()
                     fraction = max(0f, min(1f, fraction))
@@ -852,7 +850,7 @@ class SwitchButton : View, Checkable {
                         pendingSettleState()
                     }
                 } else if (isPendingDragState()) {
-                    //在准备进入拖动状态过程中，取消之，复位
+                    //When preparing to enter the dragging state, cancel it and reset it
                     pendingCancelDragState()
                 }
             }
@@ -861,7 +859,7 @@ class SwitchButton : View, Checkable {
 
                 removeCallbacks(postPendingDrag)
                 if (isPendingDragState() || isDragState()) {
-                    //复位
+                    //reset
                     pendingCancelDragState()
                 }
             }
@@ -870,19 +868,19 @@ class SwitchButton : View, Checkable {
     }
 
     /**
-     * 是否在进入拖动或离开拖动状态
+     * Whether you are entering or leaving the dragging state
      * @return
      */
     private fun isPendingDragState(): Boolean = (animateState == ANIMATE_STATE_PENDING_DRAG || animateState == ANIMATE_STATE_PENDING_RESET)
 
     /**
-     * 是否在手指拖动状态
+     * Whether it is in finger dragging state
      * @return
      */
     private fun isDragState(): Boolean = animateState == ANIMATE_STATE_DRAGING
 
     /**
-     * 取消拖动状态
+     * Cancel drag status
      */
     private fun pendingCancelDragState() {
         if (isDragState() || isPendingDragState()) {
@@ -901,7 +899,7 @@ class SwitchButton : View, Checkable {
     }
 
     /**
-     * 动画-设置新的状态
+     * Animation - Set a new state
      */
     private fun pendingSettleState() {
         if (valueAnimator.isRunning) {
@@ -918,27 +916,27 @@ class SwitchButton : View, Checkable {
     }
 
     /**
-     * 保存动画状态
+     * Save animation state
      * */
     private class ViewState {
 
         /**
-         * 按钮x位置[buttonMinX-buttonMaxX]
+         * Button x position[buttonMinX-buttonMaxX]
          */
         var buttonX = 0f
 
         /**
-         * 状态背景颜色
+         * Status background color
          */
         var checkStateColor = 0
 
         /**
-         * 选中线的颜色
+         * Color of selected lines
          */
         var checkedLineColor = 0
 
         /**
-         * 状态背景的半径
+         * Radius of the state background
          */
         var radius = 0f
 
