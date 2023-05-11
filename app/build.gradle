@@ -37,7 +37,8 @@ android {
 }
 
 dependencies {
-    implementation project(':SwitchButton')
+    //implementation project(':SwitchButton')
+    implementation 'com.github.quibbler01:SwitchButton:1.0.2'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
