@@ -12,6 +12,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        //get switch button through ViewBinding or findViewById()
+        val switchButton = binding.switchButton
+
+        //set checked
+        switchButton.toggle(true)
+
+        //or set unchecked
+        switchButton.toggle(false)
     }
 
 }
