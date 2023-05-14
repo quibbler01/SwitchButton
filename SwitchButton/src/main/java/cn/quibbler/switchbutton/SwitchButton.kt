@@ -252,14 +252,12 @@ class SwitchButton : View, Checkable {
      */
     private var animateState = ANIMATE_STATE_NONE
 
-
     /**
      *
      */
     private var valueAnimator: ValueAnimator = ValueAnimator.ofFloat(0f, 1f)
 
     private var argbEvaluator = ArgbEvaluator()
-
 
     /**
      * Check
@@ -440,7 +438,6 @@ class SwitchButton : View, Checkable {
             buttonPaint.setShadowLayer(shadowRadius.toFloat(), 0f, shadowOffset.toFloat(), shadowColor)
         }
 
-
         valueAnimator.duration = effectDuration.toLong()
         valueAnimator.repeatCount = 0
 
@@ -449,9 +446,7 @@ class SwitchButton : View, Checkable {
 
         super.setClickable(true)
         this.setPadding(0, 0, 0, 0)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(LAYER_TYPE_SOFTWARE, null)
-        }
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
     }
 
     private fun broadcastEvent() {
@@ -477,14 +472,13 @@ class SwitchButton : View, Checkable {
         if (isInAnimating()) return
         if (!isTouchingDown) return
 
-        valueAnimator?.let {
+        valueAnimator.let {
             if (it.isRunning) {
                 it.cancel()
             }
         }
 
         animateState = ANIMATE_STATE_PENDING_DRAG
-
 
         beforeState.copy(viewState)
         afterState.copy(viewState)
@@ -515,7 +509,6 @@ class SwitchButton : View, Checkable {
     override fun toggle() {
         toggle(true)
     }
-
 
     /**
      * Switch state
@@ -739,7 +732,6 @@ class SwitchButton : View, Checkable {
         )
     }
 
-
     /**
      * Draw off status indicator
      * @param canvas
@@ -763,7 +755,6 @@ class SwitchButton : View, Checkable {
         paint.strokeWidth = lineWidth
         canvas?.drawCircle(centerX, centerY, radius, paint)
     }
-
 
     private fun drawArc(canvas: Canvas?, left: Float, top: Float, right: Float, bottom: Float, startAngle: Float, sweepAngle: Float, paint: Paint) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
