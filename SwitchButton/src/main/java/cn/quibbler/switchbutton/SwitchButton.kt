@@ -253,10 +253,13 @@ class SwitchButton : View, Checkable {
     private var animateState = ANIMATE_STATE_NONE
 
     /**
-     *
+     * value animator for this SwitchButton
      */
     private var valueAnimator: ValueAnimator = ValueAnimator.ofFloat(0f, 1f)
 
+    /**
+     * Evaluator of ARGB colors
+     */
     private var argbEvaluator = ArgbEvaluator()
 
     /**
@@ -285,12 +288,12 @@ class SwitchButton : View, Checkable {
     private var isTouchingDown = false
 
     /**
-     *
+     * is UI init
      */
     private var isUiInited = false
 
     /**
-     *
+     * should broadcast state check change
      */
     private var isEventBroadcast = false
 
@@ -301,12 +304,18 @@ class SwitchButton : View, Checkable {
      */
     private var touchDownTime: Long = 0L
 
+    /**
+     * post pending drag this SwitchButton
+     */
     private val postPendingDrag = Runnable {
         if (!isInAnimating()) {
             pendingDragState()
         }
     }
 
+    /**
+     * this SwitchButton animator update listener
+     */
     private val animatorUpdateListener: ValueAnimator.AnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener { animation ->
         val value = animation.animatedValue as Float
         when (animateState) {
@@ -320,6 +329,7 @@ class SwitchButton : View, Checkable {
                     viewState.checkStateColor = argbEvaluator.evaluate(value, beforeState.checkStateColor, afterState.checkStateColor) as Int
                 }
             }
+
             ANIMATE_STATE_SWITCH -> {
                 viewState.buttonX = beforeState.buttonX + (afterState.buttonX - beforeState.buttonX) * value
                 val fraction = (viewState.buttonX - buttonMinX) / (buttonMaxX - buttonMinX)
@@ -327,12 +337,16 @@ class SwitchButton : View, Checkable {
                 viewState.radius = fraction * viewRadius
                 viewState.checkedLineColor = argbEvaluator.evaluate(fraction, Color.TRANSPARENT, checkLineColor) as Int
             }
+
             ANIMATE_STATE_DRAGING -> {}
             ANIMATE_STATE_NONE -> {}
         }
         postInvalidate()
     }
 
+    /**
+     * this SwitchButton animator listener
+     */
     private val animatorListener: Animator.AnimatorListener = object : Animator.AnimatorListener {
         override fun onAnimationStart(animation: Animator?) {
         }
@@ -347,21 +361,25 @@ class SwitchButton : View, Checkable {
 
                     postInvalidate()
                 }
+
                 ANIMATE_STATE_PENDING_RESET -> {
                     animateState = ANIMATE_STATE_NONE
                     postInvalidate()
                 }
+
                 ANIMATE_STATE_PENDING_SETTLE -> {
                     animateState = ANIMATE_STATE_NONE
                     postInvalidate()
                     broadcastEvent()
                 }
+
                 ANIMATE_STATE_SWITCH -> {
                     isChecked = !isChecked
                     animateState = ANIMATE_STATE_NONE
                     postInvalidate()
                     broadcastEvent()
                 }
+
                 ANIMATE_STATE_NONE -> {}
             }
         }
@@ -374,12 +392,21 @@ class SwitchButton : View, Checkable {
     }
 
     constructor(context: Context?) : this(context, null)
+
     constructor(context: Context?, attrs: AttributeSet?) : this(context, attrs, 0)
+
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : this(context, attrs, defStyleAttr, 0)
+
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
         init(context, attrs)
     }
 
+    /**
+     * init view property
+     *
+     * @param context Context?
+     * @param attrs AttributeSet?
+     */
     private fun init(context: Context?, attrs: AttributeSet?) {
         val typedArray = context?.obtainStyledAttributes(attrs, R.styleable.SwitchButton)
 
@@ -459,7 +486,7 @@ class SwitchButton : View, Checkable {
 
     /**
      * Is it in animation state
-     * @return
+     * @return is in animating
      */
     private fun isInAnimating(): Boolean {
         return animateState != ANIMATE_STATE_NONE
@@ -518,6 +545,12 @@ class SwitchButton : View, Checkable {
         toggle(animate, true)
     }
 
+    /**
+     * toggle SwitchButton check state
+     *
+     * @param animate Boolean
+     * @param broadcast Boolean
+     */
     private fun toggle(animate: Boolean, broadcast: Boolean) {
         if (!isEnabled) return
 
@@ -563,6 +596,11 @@ class SwitchButton : View, Checkable {
         valueAnimator.start()
     }
 
+    /**
+     * set view state which is check
+     *
+     * @param viewState ViewState
+     */
     private fun setCheckedViewState(viewState: ViewState) {
         viewState.radius = viewRadius
         viewState.checkStateColor = checkedColor
@@ -571,6 +609,11 @@ class SwitchButton : View, Checkable {
         buttonPaint.color = checkedButtonColor
     }
 
+    /**
+     * set view state which is uncheck
+     *
+     * @param viewState ViewState
+     */
     private fun setUncheckViewState(viewState: ViewState) {
         viewState.radius = 0f
         viewState.checkStateColor = uncheckColor
@@ -579,6 +622,9 @@ class SwitchButton : View, Checkable {
         buttonPaint.color = uncheckButtonColor
     }
 
+    /**
+     * interface which use to listen Check change
+     */
     private interface OnCheckedChangeListener {
         fun onCheckedChanged(view: SwitchButton, isChecked: Boolean)
     }
@@ -806,6 +852,7 @@ class SwitchButton : View, Checkable {
                 removeCallbacks(postPendingDrag)
                 postDelayed(postPendingDrag, 100)
             }
+
             MotionEvent.ACTION_MOVE -> {
                 val eventX = event.x
                 if (isPendingDragState()) {
@@ -822,6 +869,7 @@ class SwitchButton : View, Checkable {
                     postInvalidate()
                 }
             }
+
             MotionEvent.ACTION_UP -> {
                 isTouchingDown = false
                 removeCallbacks(postPendingDrag)
@@ -845,6 +893,7 @@ class SwitchButton : View, Checkable {
                     pendingCancelDragState()
                 }
             }
+
             MotionEvent.ACTION_CANCEL -> {
                 isTouchingDown = true
 
